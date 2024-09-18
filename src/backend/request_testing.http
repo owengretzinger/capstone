@@ -1,0 +1,13 @@
+# download VSCode REST Client https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+GET http://127.0.0.1:8000
+
+###
+
+GET http://127.0.0.1:8000/test
+content-type: application/json
+
+{
+    "name": "John",
+    "age": "35"
+}
