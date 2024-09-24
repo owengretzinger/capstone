@@ -1,8 +1,9 @@
-# Meeting Bot Backend
+## Meeting Bot Backend
 
 This is the FastAPI backend.
 
-# Getting Started
+
+## Getting Started
 
 Clone the repository, then follow the steps below:
 
@@ -27,12 +28,45 @@ Clone the repository, then follow the steps below:
     3. Press `Enter interpreter path`
     4. Enter `./src/backend/venv/bin/python`
 
-4. Run the server:
+4. Navigate back to `/src` and run the server:
 
     ```
-    uvicorn main:app --reload
+    cd ..
+    uvicorn backend.main:app --reload
     ```
 
     The app will run at `http://127.0.0.1:8000`.
 
-5. Test API requests using `.http` files with the REST client VSCode extension
+
+## Documentation
+
+After running the server, you can access interactive API docs:
+
+- Go to http://127.0.0.1:8000/redoc for ReDoc docs
+- Go to http://127.0.0.1:8000/docs for Swagger UI docs
+
+
+## Testing
+
+### pytest
+
+FastAPI tests are set up using pytest and httpx. (See https://fastapi.tiangolo.com/advanced/async-tests/ for documentation.)
+
+Run the test suite using pytest:
+
+```
+pytest
+```
+
+### http
+
+You can also manually test http requests using `.http` files with the REST client VSCode extension.
+
+
+## Adding Packages
+
+Install a package and add it to requirements.txt using the following:
+
+```
+pip install <package> && pip freeze > requirements.txt
+```
