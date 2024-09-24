@@ -1,26 +1,11 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-import uvicorn
+from .routes.meetings import router as meeting_router
+from .routes.audio import router as audio_router
+from .routes.bots import router as bot_router
+
 
 app = FastAPI()
 
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-class RequestData(BaseModel):
-    name: str
-    age: int
-
-
-@app.get("/test")
-def echo(data: RequestData):
-    name, age = data.model_dump().values()
-    result = f"Hello {name}, you are {age} years old"
-    return {"response": result}
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+app.include_router(meeting_router, tags=["meetings"])
+app.include_router(audio_router, tags=["audio"])
+app.include_router(bot_router, tags=["bots"])
