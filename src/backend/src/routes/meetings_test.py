@@ -1,6 +1,6 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
-from backend.routes.meetings import FilterParams
+from routes.meetings import FilterParams
 from ..main import app
 
 
