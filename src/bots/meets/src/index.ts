@@ -7,25 +7,9 @@ stealthPlugin.enabledEvasions.delete('iframe.contentWindow');
 stealthPlugin.enabledEvasions.delete('media.codecs');
 chromium.use(stealthPlugin);
 
-// Sleep function
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const url = "https://meet.google.com/wvx-raiz-zee";
 
-
-const url = "https://meet.google.com/sno-imni-jpr";
-
-const parseMeetingURL = (input: string): string => {
-  const fullPath = input.replace("https://meet.google.com", "");
-
-  const [path, query] = fullPath.split("?");
-
-  return `https://meet.google.com#${decodeURIComponent(
-    path
-  )}?${query}&anon=true`;
-};
-
-const file = fs.createWriteStream(__dirname + "/test.webm");
+// const file = fs.createWriteStream(__dirname + "/test.webm");
 
 (async () => {
 
@@ -35,8 +19,7 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
     '--disable-infobars',
     '--no-sandbox',
     '--disable-setuid-sandbox',
-    // '--use-fake-device-for-media-stream',
-    // "--use-fake-ui-for-media-stream"
+    "--use-fake-device-for-media-stream"
   ]
 
   // Launch the browser and open a new blank page
@@ -45,9 +28,7 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
     args: browserArgs
   });
 
-
-  const urlObj = new URL(url);
-
+  
   // Create Browser Context
   const context = await browser.newContext({
     permissions: ['camera', 'microphone'],
@@ -78,4 +59,12 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
 
   console.log('Clicking the "Ask to join" button...');
   await page.click('//button[.//span[text()="Ask to join"]]');
+
+  console.log('Awaiting Entry ....')
+  const leaveButton = `//button[@aria-label="Leave call"]`
+  await page.waitForSelector(leaveButton, { timeout: 0 })
+  
+  console.log('Joined Call.')
+  await page.click(leaveButton)
+
 })();
