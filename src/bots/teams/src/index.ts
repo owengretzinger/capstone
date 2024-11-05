@@ -25,41 +25,50 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
     slowMo: 250,
     // args: ["--use-fake-ui-for-media-stream"],
   });
+
+  // Parse the URL
   const urlObj = new URL(parseTeamsUrl(url));
 
+  // Override camera and microphone permissions
   const context = browser.defaultBrowserContext();
   context.clearPermissionOverrides();
   context.overridePermissions(urlObj.origin, ["camera", "microphone"]);
 
+  // Open a new page
   const page = await browser.newPage();
 
   // Navigate the page to a URL
   await page.goto(urlObj.href);
 
+  // Fill in the display name
   await page
     .locator(`[data-tid="prejoin-display-name-input"]`)
     .fill("Meeting Bot");
 
-  // mute microphone before joining
+  // Mute microphone before joining
   await page.locator(`[data-tid="toggle-mute"]`).click();
 
+  // Join the meeting
   await page.locator(`[data-tid="prejoin-join-button"]`).click();
 
+  // Listen for changes to the people in the meeting
   page.locator(`aria-label="People"`).on("DOMSubtreeModified", async (e) => {
     console.log("People changed");
     console.log(e);
   });
-
-  const stream = await getStream(page, { audio: true, video: true });
-
-  console.log("Recording...");
-  stream.pipe(file);
 
   // First wait for the leave button to appear (meaning we've joined the meeting)
   await page.waitForSelector('button[aria-label="Leave (Ctrl+Shift+H)"]', {
     timeout: 30000,
   });
   console.log("Successfully joined meeting");
+
+  // Get the stream
+  const stream = await getStream(page, { audio: true, video: true });
+
+  // Pipe the stream to a file
+  console.log("Recording...");
+  stream.pipe(file);
 
   // Then wait for meeting to end by watching for the "Leave" button to disappear
   await page.waitForFunction(
@@ -71,12 +80,15 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
     },
     { timeout: 0 }
   );
-
   console.log("Meeting ended");
+
+  // Stop recording
   await stream.destroy();
   file.close();
-  console.log("finished");
+  console.log("Recording finished");
 
+  console.log("Closing browser");
+  // Close the browser
   await browser.close();
   (await wss).close();
 })();
