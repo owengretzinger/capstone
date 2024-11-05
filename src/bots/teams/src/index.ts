@@ -53,16 +53,30 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
   const stream = await getStream(page, { audio: true, video: true });
 
   console.log("Recording...");
-
   stream.pipe(file);
-  setTimeout(async () => {
-    await stream.destroy();
-    file.close();
-    console.log("finished");
 
-    await browser.close();
-    (await wss).close();
-  }, 1000 * 10);
+  // First wait for the leave button to appear (meaning we've joined the meeting)
+  await page.waitForSelector('button[aria-label="Leave (Ctrl+Shift+H)"]', {
+    timeout: 30000,
+  });
+  console.log("Successfully joined meeting");
 
-  // await browser.close();
+  // Then wait for meeting to end by watching for the "Leave" button to disappear
+  await page.waitForFunction(
+    () => {
+      const leaveButton = document.querySelector(
+        'button[aria-label="Leave (Ctrl+Shift+H)"]'
+      );
+      return !leaveButton;
+    },
+    { timeout: 0 }
+  );
+
+  console.log("Meeting ended");
+  await stream.destroy();
+  file.close();
+  console.log("finished");
+
+  await browser.close();
+  (await wss).close();
 })();
