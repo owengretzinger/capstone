@@ -40,6 +40,9 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
     .locator(`[data-tid="prejoin-display-name-input"]`)
     .fill("Meeting Bot");
 
+  // mute microphone before joining
+  await page.locator(`[data-tid="toggle-mute"]`).click();
+
   await page.locator(`[data-tid="prejoin-join-button"]`).click();
 
   page.locator(`aria-label="People"`).on("DOMSubtreeModified", async (e) => {
