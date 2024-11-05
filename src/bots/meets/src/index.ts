@@ -60,11 +60,40 @@ const url = "https://meet.google.com/wvx-raiz-zee";
   console.log('Clicking the "Ask to join" button...');
   await page.click('//button[.//span[text()="Ask to join"]]');
 
-  console.log('Awaiting Entry ....')
+
+  //
   const leaveButton = `//button[@aria-label="Leave call"]`
-  await page.waitForSelector(leaveButton, { timeout: 0 })
+  const peopleButton = `//button[@aria-label="People"]`
+
+
+  //Should Exit after 1 Minute
+  console.log('Awaiting Entry ....')
+  await page.waitForSelector(leaveButton, { timeout: 60000 })
   
+
   console.log('Joined Call.')
-  await page.click(leaveButton)
+  console.log('Finding People Button..')
+  await page.waitForSelector(peopleButton)
+  await page.click(peopleButton);
+  console.log('Clicked People Button.')
+  
+  
+  //Start Recording
+
+
+  // Detect All but Me Person Leave
+  await page.locator('//span[.//div[text()="Contributors"]]//div[text()="1"]').waitFor()
+  console.log('Detected 1 Person in the call -- exiting ...');  
+
+  // End Recording
+
+  // Leave Meeting
+  // Close Browser
+  await page.click(leaveButton);
+  console.log('Left Call.')
+
+  await browser.close();
+  console.log('Closed Browser.')
+
 
 })();
