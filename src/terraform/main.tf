@@ -1,29 +1,32 @@
 provider "aws" {
-    region = var.aws_region
-    profile = var.aws_profile
-    default_tags {
-        tags = {
-            app-id = "meetingbot"
-            app-purpose = "meeting bot"
-            environment = "${terraform.workspace == "default" ? "prod" : terraform.workspace}"
-            pii = "yes"
-        }
+  region  = var.aws_region
+  profile = var.aws_profile
+  default_tags {
+    tags = {
+      app-id      = "meetingbot"
+      app-purpose = "meeting bot"
+      environment = "${terraform.workspace == "default" ? "prod" : terraform.workspace}"
+      pii         = "yes"
     }
+  }
 }
 
 data "aws_availability_zones" "available" {}
 
 locals {
-    name = "meetingbot"
+  name = "meetingbot"
 
-    vpc_cidr = "10.0.0.0/16"
-    azs = slice(data.aws_availability_zones.available.names, 0, 3)
+  vpc_cidr = "10.0.0.0/16"
+  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
+  ecrs     = ["backend", "teams-bot", "zoom-bot", "meets-bot"]
 }
 
 terraform {
-    backend "s3" {
-        encrypt        = true
-    }
+  backend "s3" {
+    encrypt = true
+    key     = "meetingbot/terraform.tfstate"
+
+  }
 }
 
 module "vpc" {
@@ -37,8 +40,8 @@ module "vpc" {
   private_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 4, k)]
   public_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 48)]
 
-#   enable_nat_gateway = true
-#   single_nat_gateway = true
+  #   enable_nat_gateway = true
+  #   single_nat_gateway = true
 }
 
 module "api_gateway" {
