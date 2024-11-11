@@ -4,7 +4,7 @@ import { launch, getStream, wss } from "puppeteer-stream";
 
 // Url from Zoom meeting
 const url =
-    "https://us05web.zoom.us/j/87836813561?pwd=OUqT7h05sUvUyoGPFe1TF6yGtabPeb.1";
+    "https://us05web.zoom.us/j/89675598217?pwd=rKLrUNh7PeA5maC71GykbAU35CFb0e.1";
 
 // Parse the url to get the web meeting url
 const parseZoomUrl = (input: string): string => {
@@ -47,28 +47,40 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
     // Waits for the input field and types the name
     await frame.waitForSelector("#input-for-name");
     await frame.type("#input-for-name", "Meeting Bot");
+    console.log("Typed name");
 
-    // Waits for the join button and clicks it
+    // Wait for join button to be clickable
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Clicks the join audio button
+    await frame.waitForSelector('button[aria-label="Join Audio"]');
+    await frame.click('button[aria-label="Join Audio"]')
+    console.log("Joined audio");
+
+    // Waits for mute button to be clickable and clicks it
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await frame.waitForSelector('button[aria-label="Mute"]');
+    await frame.click('button[aria-label="Mute"]');
+    console.log("Muted");
+
+    // Clicks the join button
     await frame.waitForSelector("button.zm-btn.preview-join-button");
     await frame.click("button.zm-btn.preview-join-button");
-    
-    // Waits for the join with audio button and clicks it
-    // TODO: force join with audio before joining the meeting
-    await frame.waitForSelector("button.join-audio-by-voip__join-btn", {timeout: 60000});
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await frame.click("button.join-audio-by-voip__join-btn");
+    console.log("Joined");
+
+    // TODO: discuss when to start recordings
+    // Wait for the leave button to start recording
+    // await frame.waitForSelector('button[aria-label="Leave"]');
   }
 
   // Start the recording
   const stream = await getStream(page, { audio: true, video: true });
-
   console.log("Recording...");
 
   // Pipe the stream to the file
   stream.pipe(file);
 
   // Constantly check if the meeting has ended every 5 seconds
-  // TODO: see what happens if the bot gets kicked as well
   const checkMeetingEnd = async () => {
     // Wait for the "Ok" button to appear which indicates the meeting is over
     const okButton = await frame?.waitForSelector(
