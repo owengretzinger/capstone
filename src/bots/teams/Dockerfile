@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:lts-alpine
+FROM --platform=linux/amd64 node:18-slim
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application code
 COPY . .
