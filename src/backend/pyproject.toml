@@ -1,20 +1,23 @@
 [project]
-name = "meeting-bot-backend"
+name = "meetingbot-backend"
 version = "0.1.0"
-description = "Add your description here"
 dependencies = [
     "fastapi>=0.115.0",
     "pytest>=8.3.3",
     "httpx>=0.27.2",
     "pydantic>=2.9.2",
-    "typing>=3.10.0.0",
     "uvicorn>=0.31.0",
+    "sqlmodel>=0.0.22",
+    "alembic>=1.14.0",
+    "python-dotenv>=1.0.1",
+    "psycopg[binary]>=3.2.3",
+    "greenlet>=3.1.1",
 ]
-readme = "README.md"
-requires-python = ">= 3.8"
+readme = "../README.md"
+requires-python = ">= 3.11"
 
 [tool.rye.scripts]
-dev = "uvicorn src.main:app --reload"
+dev = "uvicorn app.main:app --reload"
 test = "pytest"
 
 [build-system]
@@ -24,6 +27,7 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 dev-dependencies = []
+virtual = true
 
 [tool.hatch.metadata]
 allow-direct-references = true
