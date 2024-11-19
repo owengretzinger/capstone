@@ -4,7 +4,7 @@ import { launch, getStream, wss } from "puppeteer-stream";
 
 // Url from Zoom meeting
 const url =
-    "https://us05web.zoom.us/j/89675598217?pwd=rKLrUNh7PeA5maC71GykbAU35CFb0e.1";
+    "https://us05web.zoom.us/j/86251541713?pwd=Sq3CwmbzQUddIxiKb5YG2ofqUaZMjI.1";
 
 // Parse the url to get the web meeting url
 const parseZoomUrl = (input: string): string => {
@@ -50,7 +50,7 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
     console.log("Typed name");
 
     // Wait for join button to be clickable
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 700));
 
     // Clicks the join audio button
     await frame.waitForSelector('button[aria-label="Join Audio"]');
@@ -58,7 +58,7 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
     console.log("Joined audio");
 
     // Waits for mute button to be clickable and clicks it
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 700));
     await frame.waitForSelector('button[aria-label="Mute"]');
     await frame.click('button[aria-label="Mute"]');
     console.log("Muted");
@@ -66,11 +66,11 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
     // Clicks the join button
     await frame.waitForSelector("button.zm-btn.preview-join-button");
     await frame.click("button.zm-btn.preview-join-button");
-    console.log("Joined");
-
-    // TODO: discuss when to start recordings
-    // Wait for the leave button to start recording
-    // await frame.waitForSelector('button[aria-label="Leave"]');
+    
+    // Wait for the leave button to appear and be properly labeled before starting recording
+    await new Promise(resolve => setTimeout(resolve, 700)); // Needed to wait for the aria-label to be properly attached
+    await frame.waitForSelector('button[aria-label="Leave"]');
+    console.log("Leave button found and labeled, ready to start recording");
   }
 
   // Start the recording
@@ -80,7 +80,7 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
   // Pipe the stream to the file
   stream.pipe(file);
 
-  // Constantly check if the meeting has ended every 5 seconds
+  // Constantly check if the meeting has ended every second
   const checkMeetingEnd = async () => {
     // Wait for the "Ok" button to appear which indicates the meeting is over
     const okButton = await frame?.waitForSelector(
@@ -102,7 +102,7 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
       await browser.close();
       (await wss).close();
     } else {
-      setTimeout(checkMeetingEnd, 1000);
+      setTimeout(checkMeetingEnd, 1000); // Check every second
     }
   };
 
