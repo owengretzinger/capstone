@@ -15,7 +15,26 @@ const parseTeamsUrl = (input: string): string => {
   )}?${query}&anon=true`;
 };
 
-const file = fs.createWriteStream(__dirname + "/test.webm");
+if (
+  !process.env.AWS_ACCESS_KEY_ID ||
+  !process.env.AWS_SECRET_ACCESS_KEY ||
+  !process.env.AWS_BUCKET_NAME ||
+  !process.env.AWS_REGION
+) {
+  throw new Error("Missing environment variables");
+}
+
+// Initialize S3 client
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const recordingPath = __dirname + "/recording.webm";
+const file = fs.createWriteStream(recordingPath);
 
 (async () => {
   // Launch the browser and open a new blank page
@@ -86,6 +105,29 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
   await stream.destroy();
   file.close();
   console.log("Recording finished");
+
+  // Upload recording to S3
+  console.log("Uploading recording to S3...");
+  const fileContent = await fs.promises.readFile(recordingPath);
+  const uuid = crypto.randomUUID();
+  const key = `recordings/${uuid}-teams-recording.webm`;
+
+  try {
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+        Body: fileContent,
+        ContentType: "video/webm",
+      })
+    );
+    console.log(`Successfully uploaded recording to S3: ${key}`);
+
+    // Clean up local file
+    await fs.promises.unlink(recordingPath);
+  } catch (error) {
+    console.error("Error uploading to S3:", error);
+  }
 
   console.log("Closing browser");
   // Close the browser
