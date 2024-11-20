@@ -11,7 +11,7 @@ const parseTeamsUrl = (input: string): string => {
   const [path, query] = fullPath.split("?");
 
   return `https://teams.microsoft.com/v2/?meetingjoin=true#${decodeURIComponent(
-    path
+    path,
   )}?${query}&anon=true`;
 };
 
@@ -20,10 +20,22 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
 (async () => {
   // Launch the browser and open a new blank page
   const browser = await launch({
-    executablePath: puppeteer.executablePath(),
-    headless: false,
-    slowMo: 250,
-    // args: ["--use-fake-ui-for-media-stream"],
+    executablePath:
+      process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath(),
+    headless: "new",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--use-fake-ui-for-media-stream",
+      "--use-fake-device-for-media-stream",
+      "--window-size=1920,1080",
+      "--disable-web-security",
+      "--allow-running-insecure-content",
+      "--autoplay-policy=no-user-gesture-required",
+    ],
+    ignoreDefaultArgs: ["--mute-audio"],
   });
 
   // Parse the URL
@@ -74,11 +86,11 @@ const file = fs.createWriteStream(__dirname + "/test.webm");
   await page.waitForFunction(
     () => {
       const leaveButton = document.querySelector(
-        'button[aria-label="Leave (Ctrl+Shift+H)"]'
+        'button[aria-label="Leave (Ctrl+Shift+H)"]',
       );
       return !leaveButton;
     },
-    { timeout: 0 }
+    { timeout: 0 },
   );
   console.log("Meeting ended");
 
