@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from app.db import init_db
 
 
-from .routes.bots import router as bot_router
-from .routes.users import router as user_router
+from .routes.public.bots import router as bot_router
+from .routes.hidden.users import router as user_router
 
 
 @asynccontextmanager
@@ -18,9 +18,10 @@ app = FastAPI(title="MeetingBot Backend", version="0.1.0", lifespan=lifespan)
 
 
 app.include_router(bot_router, tags=["bots"])
-app.include_router(user_router, tags=["users"])
+
+app.include_router(user_router, tags=["users"], include_in_schema=False)
 
 
-@app.get("/ping")
+@app.get("/ping", include_in_schema=False)
 async def pong():
     return {"ping": "pong!"}

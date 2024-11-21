@@ -33,17 +33,6 @@ async def get_user(user_id: int, session: AsyncSession = Depends(get_session)):
     return user
 
 
-@router.delete("/users/{user_id}")
-async def delete_user(user_id: int, session: AsyncSession = Depends(get_session)):
-    """Delete a user."""
-    user = await session.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    await session.delete(user)
-    await session.commit()
-    return {"message": "User deleted successfully"}
-
-
 @router.put("/users/{user_id}", response_model=User)
 async def update_user(
     user_id: int, user_update: UserCreate, session: AsyncSession = Depends(get_session)
@@ -53,7 +42,7 @@ async def update_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user_data = user_update.dict(exclude_unset=True)
+    user_data = user_update.model_dump(exclude_unset=True)
     for key, value in user_data.items():
         setattr(user, key, value)
 
@@ -61,3 +50,14 @@ async def update_user(
     await session.commit()
     await session.refresh(user)
     return user
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: int, session: AsyncSession = Depends(get_session)):
+    """Delete a user."""
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    await session.delete(user)
+    await session.commit()
+    return {"message": "User deleted successfully"}

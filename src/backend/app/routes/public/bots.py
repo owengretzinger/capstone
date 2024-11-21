@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from app.models import Bot, MeetingInfo
+from app.models import Bot
 from app.models import BotCreate
 
 from sqlmodel import select
@@ -11,7 +10,7 @@ from app.db import get_session
 router = APIRouter()
 
 
-@router.post("/create_bot", response_model=Bot)
+@router.post("/bots", response_model=Bot)
 async def create_bot(data: BotCreate, session: AsyncSession = Depends(get_session)):
     """
     Create a bot.
@@ -42,3 +41,33 @@ async def get_bot(bot_id: int, session: AsyncSession = Depends(get_session)):
     if not bot:
         raise HTTPException(status_code=404, detail="Bot not found")
     return bot
+
+
+@router.put("/bots/{bot_id}", response_model=Bot)
+async def update_bot(
+    bot_id: int, bot_update: BotCreate, session: AsyncSession = Depends(get_session)
+):
+    """Update a bot."""
+    bot = await session.get(Bot, bot_id)
+    if not bot:
+        raise HTTPException(status_code=404, detail="Bot not found")
+
+    bot_data = bot_update.model_dump(exclude_unset=True)
+    for key, value in bot_data.items():
+        setattr(bot, key, value)
+
+    session.add(bot)
+    await session.commit()
+    await session.refresh(bot)
+    return bot
+
+
+@router.delete("/bots/{bot_id}")
+async def delete_bot(bot_id: int, session: AsyncSession = Depends(get_session)):
+    """Delete a bot."""
+    bot = await session.get(Bot, bot_id)
+    if not bot:
+        raise HTTPException(status_code=404, detail="Bot not found")
+    await session.delete(bot)
+    await session.commit()
+    return {"message": "Bot deleted successfully"}
