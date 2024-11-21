@@ -1,6 +1,11 @@
 import fs from "fs";
 import puppeteer from "puppeteer";
 import { launch, getStream, wss } from "puppeteer-stream";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import crypto from "crypto";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const url =
   "https://teams.microsoft.com/l/meetup-join/19%3ameeting_MWUwMmNiNTMtMDlmMC00ZjFmLTk2OGYtODJjNmY1MWM3MTEw%40thread.v2/0?context=%7b%22Tid%22%3a%2244376307-b429-42ad-8c25-28cd496f4772%22%2c%22Oid%22%3a%22b20c6c81-06de-4c6f-9e22-160a16855a74%22%7d";
