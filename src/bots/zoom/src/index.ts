@@ -1,10 +1,15 @@
 import fs from "fs";
 import puppeteer from "puppeteer";
 import { launch, getStream, wss } from "puppeteer-stream";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import crypto from "crypto";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Url from Zoom meeting
 const url =
-    "https://us05web.zoom.us/j/86251541713?pwd=Sq3CwmbzQUddIxiKb5YG2ofqUaZMjI.1";
+    "https://us05web.zoom.us/j/87661417895?pwd=tjA3MYFChR5bPACMv6LYZ6kMghFRbG.1";
 
 // Parse the url to get the web meeting url
 const parseZoomUrl = (input: string): string => {
@@ -17,15 +22,46 @@ const parseZoomUrl = (input: string): string => {
 
 console.log(parseZoomUrl(url));
 
-// Create the file to save the recording
-const file = fs.createWriteStream(__dirname + "/test.mp4");
+if (
+    !process.env.AWS_ACCESS_KEY_ID ||
+    !process.env.AWS_SECRET_ACCESS_KEY ||
+    !process.env.AWS_BUCKET_NAME ||
+    !process.env.AWS_REGION
+  ) {
+    throw new Error("Missing environment variables");
+  }
+  
+  // Initialize S3 client
+  const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+  
+  const recordingPath = __dirname + "/recording.webm";
+  const file = fs.createWriteStream(recordingPath);
 
 // Launch a browser and open the meeting
 (async () => {
   const browser = await launch({
     executablePath: puppeteer.executablePath(),
-    headless: false,
+    headless: "new",
     // slowMo: 10,
+    args: [
+        "--no-sandbox",
+    //     "--disable-setuid-sandbox",
+    //     "--disable-dev-shm-usage",
+    //     "--disable-gpu",
+        // "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream",
+        "--window-size=1920,1080",
+    //     "--disable-web-security",
+    //     "--allow-running-insecure-content",
+    //     "--autoplay-policy=no-user-gesture-required",
+    ],
+    // ignoreDefaultArgs: ["--mute-audio"],
   });
   const urlObj = new URL(parseZoomUrl(url));
 
@@ -97,6 +133,30 @@ const file = fs.createWriteStream(__dirname + "/test.mp4");
       stream.destroy();
       file.close();
       console.log("Recording saved");
+
+      // Upload recording to S3
+  console.log("Uploading recording to S3...");
+  const fileContent = await fs.promises.readFile(recordingPath);
+  const uuid = crypto.randomUUID();
+  const key = `recordings/${uuid}-teams-recording.webm`;
+
+  try {
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+        Body: fileContent,
+        ContentType: "video/webm",
+      })
+    );
+    console.log(`Successfully uploaded recording to S3: ${key}`);
+
+    // Clean up local file
+    await fs.promises.unlink(recordingPath);
+  } catch (error) {
+    console.error("Error uploading to S3:", error);
+  }
+
 
       // Close the browser
       await browser.close();
