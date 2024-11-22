@@ -14,14 +14,14 @@ USER $PPTRUSER_UID
 # Set working directory
 WORKDIR /home/pptruser
 
-# Copy package.json, pnpm-lock.yaml, and .env file
-COPY package.json pnpm-lock.yaml ./
+# Copy package.json, pnpm-lock.yaml, .env file, and src/index.ts into the src directory
+COPY package.json pnpm-lock.yaml .env ./
+COPY src/index.ts ./src/
 
-# Install dependencies
+# Install dependencies inside the container
 RUN pnpm install --frozen-lockfile
 
-# Copy the rest of the application code
-COPY . .
+# Change ownership of the files
 USER root
 RUN chown -R pptruser:pptruser .
 USER $PPTRUSER_UID
