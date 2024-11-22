@@ -6,4 +6,6 @@ __pycache__
 node_modules/
 *.webm
 *.mp4
+
 .env
+.secrets

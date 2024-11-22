@@ -45,9 +45,9 @@ const file = fs.createWriteStream(recordingPath);
   // Launch the browser and open a new blank page
   const browser = await launch({
     executablePath: puppeteer.executablePath(),
-    headless: false,
-    slowMo: 250,
+    headless: "new",
     // args: ["--use-fake-ui-for-media-stream"],
+    args: ["--no-sandbox"],
   });
 
   // Parse the URL
