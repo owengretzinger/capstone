@@ -41,6 +41,9 @@ const s3Client = new S3Client({
 const recordingPath = __dirname + "/recording.webm";
 const file = fs.createWriteStream(recordingPath);
 
+const leaveButtonSelector =
+  'button[aria-label="Leave (Ctrl+Shift+H)"], button[aria-label="Leave (⌘+Shift+H)"]';
+
 (async () => {
   // Launch the browser and open a new blank page
   const browser = await launch({
@@ -82,7 +85,7 @@ const file = fs.createWriteStream(recordingPath);
   });
 
   // First wait for the leave button to appear (meaning we've joined the meeting)
-  await page.waitForSelector('button[aria-label="Leave (Ctrl+Shift+H)"]', {
+  await page.waitForSelector(leaveButtonSelector, {
     timeout: 30000,
   });
   console.log("Successfully joined meeting");
@@ -96,13 +99,9 @@ const file = fs.createWriteStream(recordingPath);
 
   // Then wait for meeting to end by watching for the "Leave" button to disappear
   await page.waitForFunction(
-    () => {
-      const leaveButton = document.querySelector(
-        'button[aria-label="Leave (Ctrl+Shift+H)"]'
-      );
-      return !leaveButton;
-    },
-    { timeout: 0 }
+    (selector) => !document.querySelector(selector),
+    {},
+    leaveButtonSelector
   );
   console.log("Meeting ended");
 
