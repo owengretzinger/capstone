@@ -1,34 +1,30 @@
-FROM --platform=linux/amd64 node:22-alpine
+FROM --platform=linux/amd64 ghcr.io/puppeteer/puppeteer:latest
+
+ENV \
+    # Configure default locale (important for chrome-headless-shell).
+    LANG=en_US.UTF-8 \
+    # UID of the non-root user 'pptruser'
+    PPTRUSER_UID=10042
 
 # Install pnpm
+USER root
 RUN npm install -g pnpm
-
-# Install Chrome dependencies
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    nodejs \
-    yarn
-# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+USER $PPTRUSER_UID
 
 # Set working directory
-WORKDIR /app
+WORKDIR /home/pptruser
 
-# Copy package.json, pnpm-lock.yaml, and .env file
+# Copy package.json, pnpm-lock.yaml, .env file, and src/index.ts into the src directory
 COPY package.json pnpm-lock.yaml .env ./
+COPY src/index.ts ./src/
 
-# Install dependencies
+# Install dependencies inside the container
 RUN pnpm install --frozen-lockfile
 
-# Copy the rest of the application code
-COPY . .
+# Change ownership of the files
+USER root
+RUN chown -R pptruser:pptruser .
+USER $PPTRUSER_UID
 
 # Expose the port the app runs on
 EXPOSE 3000

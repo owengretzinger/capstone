@@ -9,7 +9,7 @@ dotenv.config();
 
 // Url from Zoom meeting
 const url =
-    "https://us05web.zoom.us/j/87661417895?pwd=tjA3MYFChR5bPACMv6LYZ6kMghFRbG.1";
+    "https://us05web.zoom.us/j/84887889827?pwd=jWB1bODrre32abYKxE94bM2cFxI0Ml.1";
 
 // Parse the url to get the web meeting url
 const parseZoomUrl = (input: string): string => {
@@ -48,20 +48,7 @@ if (
   const browser = await launch({
     executablePath: puppeteer.executablePath(),
     headless: "new",
-    // slowMo: 10,
-    args: [
-        "--no-sandbox",
-    //     "--disable-setuid-sandbox",
-    //     "--disable-dev-shm-usage",
-    //     "--disable-gpu",
-        // "--use-fake-ui-for-media-stream",
-        "--use-fake-device-for-media-stream",
-        "--window-size=1920,1080",
-    //     "--disable-web-security",
-    //     "--allow-running-insecure-content",
-    //     "--autoplay-policy=no-user-gesture-required",
-    ],
-    // ignoreDefaultArgs: ["--mute-audio"],
+    args: ["--no-sandbox"],
   });
   const urlObj = new URL(parseZoomUrl(url));
 
