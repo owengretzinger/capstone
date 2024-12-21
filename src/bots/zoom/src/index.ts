@@ -9,7 +9,7 @@ dotenv.config();
 
 // Url from Zoom meeting
 const url =
-    "https://us05web.zoom.us/j/84887889827?pwd=jWB1bODrre32abYKxE94bM2cFxI0Ml.1";
+    "";
 
 // Parse the url to get the web meeting url
 const parseZoomUrl = (input: string): string => {
@@ -40,7 +40,7 @@ if (
     },
   });
   
-  const recordingPath = __dirname + "/recording.webm";
+  const recordingPath = __dirname + "/recording.mp4";
   const file = fs.createWriteStream(recordingPath);
 
 // Launch a browser and open the meeting
@@ -48,7 +48,10 @@ if (
   const browser = await launch({
     executablePath: puppeteer.executablePath(),
     headless: "new",
-    args: ["--no-sandbox"],
+    args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+    ],
   });
   const urlObj = new URL(parseZoomUrl(url));
 
@@ -125,7 +128,7 @@ if (
   console.log("Uploading recording to S3...");
   const fileContent = await fs.promises.readFile(recordingPath);
   const uuid = crypto.randomUUID();
-  const key = `recordings/${uuid}-teams-recording.webm`;
+  const key = `recordings/${uuid}-zoom-recording.mp4`;
 
   try {
     await s3Client.send(
@@ -133,7 +136,7 @@ if (
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: key,
         Body: fileContent,
-        ContentType: "video/webm",
+        ContentType: "video/mp4",
       })
     );
     console.log(`Successfully uploaded recording to S3: ${key}`);
