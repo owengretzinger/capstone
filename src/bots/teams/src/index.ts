@@ -84,9 +84,31 @@ const leaveButtonSelector =
     console.log(e);
   });
 
+  // Wait until join button is disabled or disappears
+  await page.waitForFunction(
+    (selector) => {
+      const joinButton = document.querySelector(selector);
+      return !joinButton || joinButton.hasAttribute("disabled");
+    },
+    {},
+    '[data-tid="prejoin-join-button"]'
+  );
+
+  // Check if we're in a waiting room by checking if the join button exists and is disabled
+  const joinButton = await page.$('[data-tid="prejoin-join-button"]');
+  const isWaitingRoom =
+    joinButton &&
+    (await joinButton.evaluate((button) => button.hasAttribute("disabled")));
+
+  let timeout = 30000;
+  if (isWaitingRoom) {
+    console.log("Joined waiting room");
+    timeout = 0; // wait indefinitely in the waiting room
+  }
+
   // First wait for the leave button to appear (meaning we've joined the meeting)
   await page.waitForSelector(leaveButtonSelector, {
-    timeout: 30000,
+    timeout: timeout,
   });
   console.log("Successfully joined meeting");
 
