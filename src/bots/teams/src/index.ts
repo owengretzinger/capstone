@@ -137,4 +137,13 @@ const leaveButtonSelector =
   // Close the browser
   await browser.close();
   (await wss).close();
+
+  // call callback url
+  const callbackUrl = process.env.CALLBACK_URL;
+  if (callbackUrl) {
+    await fetch(callbackUrl, {
+      method: "POST",
+      body: JSON.stringify({ key }),
+    });
+  }
 })();
