@@ -24,5 +24,6 @@ We're focusing on features that improve the bot's functionality and customizatio
 
 🖼️ Custom profile photos for bots during meetings.\
 🎥 Support for video recording alongside audio.\
+⏲️ Real-time audio/video/transcription.\
 🌐 Open discussions for additional feature requests from our community.\
 *Note: Our goal is to ensure this project is ready for community supports. We hope to onboard developers to contribute to the project and help shape its future.*
