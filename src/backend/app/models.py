@@ -54,7 +54,7 @@ class BotBase(SQLModel):
     end_time: datetime
     bot_display_name: Optional[str]
     bot_image: Optional[str]
-    audio_recording_url: Optional[str]
+    audio_s3_object_key: Optional[str]
 
 
 class Bot(BotBase, table=True):
